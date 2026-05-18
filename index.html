@@ -636,7 +636,6 @@ const BASE_CUES=[
 let CUES=[...BASE_CUES];
 let removedIndices=new Set();
 let pendingInsert=null;
-let pollInterval=null;
 let cueIdx=0,segSecs=CUES[0].dur*60,showSecs=90*60;
 let running=false,timerInt=null,warning=null,flashOn=true;
 let view="tv"; // tv | tech | host | tv-welcome | tech-welcome | host-welcome | pin
