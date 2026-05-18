@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
 <title>Boo Show Manager · LBV E8</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 body{background:#3a3f4a;min-height:100vh;font-family:'Helvetica Neue',Arial,sans-serif;padding:16px;}
@@ -635,6 +636,7 @@ const BASE_CUES=[
 let CUES=[...BASE_CUES];
 let removedIndices=new Set();
 let pendingInsert=null;
+let pollInterval=null;
 let cueIdx=0,segSecs=CUES[0].dur*60,showSecs=90*60;
 let running=false,timerInt=null,warning=null,flashOn=true;
 let view="tv"; // tv | tech | host | tv-welcome | tech-welcome | host-welcome | pin
