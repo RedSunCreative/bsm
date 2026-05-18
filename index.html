@@ -449,15 +449,7 @@ const ROW_ID=1;
 
 async function sbGet(){try{const r=await fetch(`${SB_URL}/rest/v1/show_state?id=eq.${ROW_ID}&select=*`,{headers:SB_HDR});const d=await r.json();return d[0]||null;}catch(e){return null;}}
 async function sbSet(patch){
-  // Map friendly names to actual column names
-  const mapped={};
-  if(patch.hasOwnProperty('cue_idx')) mapped['0']=patch.cue_idx;
-  if(patch.hasOwnProperty('is_live')) mapped['false']=patch.is_live;
-  if(patch.hasOwnProperty('standby_active')) mapped.standby_active=patch.standby_active;
-  if(patch.hasOwnProperty('prelive_active')) mapped.prelive_active=patch.prelive_active;
-  if(patch.hasOwnProperty('ros_change_msg')) mapped.ros_change_msg=patch.ros_change_msg;
-  mapped.updated_at=new Date().toISOString();
-  try{await fetch(`${SB_URL}/rest/v1/show_state?id=eq.${ROW_ID}`,{method:"PATCH",headers:{...SB_HDR,"Prefer":"return=minimal"},body:JSON.stringify(mapped)});}catch(e){}
+  try{await fetch(`${SB_URL}/rest/v1/show_state?id=eq.${ROW_ID}`,{method:"PATCH",headers:{...SB_HDR,"Prefer":"return=minimal"},body:JSON.stringify({...patch,updated_at:new Date().toISOString()})});}catch(e){}
 }
 
 let pollInterval=null;
@@ -521,9 +513,9 @@ function showLiveUI(){
 
 function applyRemoteState(state){
   if(view==="host"||view==="host-welcome") return;
-  const newIdx=parseInt(state['0'])||0;
+  const newIdx=parseInt(state.cue_idx)||0;
   const wasLive=showLive;
-  showLive=!!state['false'];
+  showLive=!!state.is_live;
 
   // RESET — if show was live and now is_live is false, go back to welcome
   if(wasLive&&!showLive){
@@ -661,7 +653,7 @@ window.addEventListener('load',async()=>{
 
   // Check if show already in progress
   const state=await sbGet();
-  if(state&&(state['false']||parseInt(state['0'])>0)){
+  if(state&&(state.is_live||parseInt(state.cue_idx)>0)){
     // Show already started — jump to live UI
     cueIdx=parseInt(state.cue_idx)||0;
     segSecs=CUES[cueIdx].dur*60;
