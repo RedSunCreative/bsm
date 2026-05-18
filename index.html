@@ -467,8 +467,11 @@ function startPolling(){
   pollInterval=setInterval(async()=>{
     if(view==="host"||view==="host-welcome") return;
     const state=await sbGet();
-    if(state) applyRemoteState(state);
-  },2000);}
+    if(state){
+      console.log("Poll state:",JSON.stringify(state));
+      applyRemoteState(state);
+    }
+  },1000);}
 
 function startRealtime(){
   try{
@@ -481,11 +484,14 @@ function startRealtime(){
     ws.onmessage=(e)=>{
       try{
         const msg=JSON.parse(e.data);
-        if(msg.event==="INSERT"||msg.event==="UPDATE"){
-          const rec=msg.payload?.record;
-          if(rec&&view!=="host"&&view!=="host-welcome") applyRemoteState(rec);
+        if(msg.event==="INSERT"||msg.event==="UPDATE"||msg.topic?.includes("show_state")){
+          const rec=msg.payload?.record||msg.payload?.new;
+          if(rec&&view!=="host"&&view!=="host-welcome"){
+            console.log("WS update received:",JSON.stringify(rec));
+            applyRemoteState(rec);
+          }
         }
-      }catch(err){}
+      }catch(err){console.log("WS error:",err);}
     };
     ws.onclose=()=>{setSyncBadge("○ RECONNECTING...","#F5D03A");setTimeout(startRealtime,3000);};
     ws.onerror=()=>startPolling();
