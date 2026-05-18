@@ -395,6 +395,7 @@ body.tv-mode .wrap{max-width:100vh;width:100vh;height:100vw;margin:0;transform:r
     <button class="host-btn" id="prelive-btn" onclick="firePreLive()" style="background:#1a1400;border-color:#F5D03A;color:#F5D03A;display:none;">🎯 FIRE: PRE-LIVE — 2 MIN WARNING</button>
     <button class="host-btn" id="standby-btn" onclick="fireStandby()" style="background:#2a2000;border-color:#F5D03A;color:#F5D03A;display:none;">🎯 FIRE STAND BY</button>
     <button class="host-btn" id="live-edit-btn" onclick="openLiveEdit()" style="background:#1a0500;border-color:#E8431A;color:#E8431A;display:none;">⚡ LIVE EDIT MODE</button>
+    <button class="host-btn" onclick="resetShow()" style="background:#1a0000;border-color:#555;color:#555;margin-top:10px;">↺ RESET SHOW TO START</button>
     <div class="nav-grid" id="nav-grid" style="display:none">
       <button class="nav-btn" id="back-btn" onclick="goPrev()" style="background:#444;color:#C4B9A8;">← BACK</button>
       <button class="nav-btn" id="next-btn" onclick="goNext()" style="background:#0a2a1a;color:#4ade80;border:2px solid #2d6a2d;">NEXT CUE →</button>
@@ -457,8 +458,7 @@ function startPolling(){
     if(view==="host"||view==="host-welcome") return;
     const state=await sbGet();
     if(state) applyRemoteState(state);
-  },2000);
-}
+  },2000);}
 
 function startRealtime(){
   try{
@@ -508,6 +508,17 @@ function applyRemoteState(state){
   const newIdx=parseInt(state.cue_idx)||0;
   const wasLive=showLive;
   showLive=!!state.is_live;
+
+  // RESET — if show was live and now is_live is false, go back to welcome
+  if(wasLive&&!showLive){
+    clearInterval(timerInt);running=false;warning=null;
+    cueIdx=0;segSecs=CUES[0].dur*60;showSecs=90*60;
+    standbyActive=false;preLiveActive=false;preLiveFired=false;
+    clearBanners();
+    if(view==="tv") setView("tv-welcome");
+    else if(view==="tech") setView("tech-welcome");
+    return;
+  }
 
   // If show just started — transition to live UI
   if(showLive&&!wasLive){
@@ -828,6 +839,18 @@ function tick(){
   else if(segSecs===120&&c.w2) warning="2";
   else if(segSecs<=0) warning="over";
   render();
+}
+
+function resetShow(){
+  if(!confirm("Reset show to beginning? This will send all screens back to the welcome screen.")) return;
+  clearInterval(timerInt);
+  running=false;warning=null;cueIdx=0;segSecs=CUES[0].dur*60;showSecs=90*60;
+  showLive=false;standbyActive=false;preLiveActive=false;preLiveFired=false;
+  scheduleOffset=0;removedIndices=new Set();
+  CUES=[...BASE_CUES];
+  clearBanners();
+  sbSet({cue_idx:0,is_live:false,standby_active:false,prelive_active:false,ros_change_msg:""});
+  setView("host-welcome");
 }
 
 function startShowCircle(){
