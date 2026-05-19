@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Supabase Sync Test</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:monospace;background:#1a1a2a;color:#fff;padding:20px;max-width:600px;margin:0 auto;}
+h2{color:#4ade80;margin-bottom:16px;}
+.status{padding:12px;border-radius:6px;margin:8px 0;font-size:15px;font-weight:bold;}
+.green{background:#0a2a0a;border:2px solid #4ade80;color:#4ade80;}
+.red{background:#2a0a0a;border:2px solid #E8431A;color:#E8431A;}
+.yellow{background:#2a2000;border:2px solid #F5D03A;color:#F5D03A;}
+.blue{background:#0a0a2a;border:2px solid #3BB8C9;color:#3BB8C9;}
+button{padding:14px 20px;margin:6px 0;border:none;border-radius:6px;cursor:pointer;font-size:14px;font-weight:bold;display:block;width:100%;}
+.btn-green{background:#0a2a0a;border:2px solid #4ade80;color:#4ade80;}
+.btn-red{background:#2a0a0a;border:2px solid #E8431A;color:#E8431A;}
+#log{background:#0d0d1a;border:1px solid #333;border-radius:6px;padding:12px;min-height:200px;max-height:400px;overflow-y:auto;font-size:13px;line-height:2;margin-top:16px;}
+</style>
+</head>
+<body>
+<h2>🎧 Supabase Sync Test</h2>
+<div id="conn-status" class="status yellow">● Connecting to Supabase...</div>
+<div id="write-status" class="status blue">Write: not tested yet</div>
+<div id="realtime-status" class="status blue">Realtime: waiting for subscription...</div>
+<br>
+<button class="btn-green" onclick="testWrite()">▶ WRITE TEST — tap this on iPhone</button>
+<button class="btn-red" onclick="resetDB()">↺ RESET DATABASE</button>
+<div id="log">Starting...\n</div>
+
+<script>
+const SB_URL="https://gogudwpuhmidngsbqfjg.supabase.co";
+const SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvZ3Vkd3B1aG1pZG5nc2JxZmpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3MTQ2NTMsImV4cCI6MjA5NDI5MDY1M30.O6n_tRQsMU29wFV_RArcN9n6gP8KSDWJQqM4P6cTq3s";
+const{createClient}=supabase;
+const sb=createClient(SB_URL,SB_KEY);
+
+function log(msg,color){
+  const el=document.getElementById('log');
+  const t=new Date().toLocaleTimeString();
+  el.innerHTML+=`<div style="color:${color||'#aaa'}">[${t}] ${msg}</div>`;
+  el.scrollTop=el.scrollHeight;
+}
+
+function setStatus(id,msg,cls){
+  const el=document.getElementById(id);
+  if(el){el.textContent=msg;el.className='status '+cls;}
+}
+
+async function testWrite(){
+  log('Writing to Supabase...','#F5D03A');
+  const{data:cur,error:re}=await sb.from('show_state').select('cue_idx').eq('id',1).single();
+  if(re){log('READ ERROR: '+re.message,'#E8431A');setStatus('write-status','Write: READ FAILED — '+re.message,'red');return;}
+  const next=(cur?.cue_idx||0)+1;
+  log('Current cue_idx: '+(cur?.cue_idx||0)+' → writing: '+next,'#F5D03A');
+  const{error}=await sb.from('show_state').update({cue_idx:next,is_live:true,updated_at:new Date().toISOString()}).eq('id',1);
+  if(error){
+    log('WRITE ERROR: '+error.message,'#E8431A');
+    setStatus('write-status','Write: FAILED — '+error.message,'red');
+  } else {
+    log('WRITE SUCCESS — cue_idx is now '+next,'#4ade80');
+    setStatus('write-status','Write: ✅ SUCCESS — cue_idx='+next,'green');
+  }
+}
+
+async function resetDB(){
+  log('Resetting...','#F5D03A');
+  const{error}=await sb.from('show_state').update({cue_idx:0,is_live:false,standby_active:false,prelive_active:false,ros_change_msg:'',updated_at:new Date().toISOString()}).eq('id',1);
+  if(error) log('RESET ERROR: '+error.message,'#E8431A');
+  else log('RESET SUCCESS','#4ade80');
+}
+
+// Realtime subscription
+log('Starting realtime subscription...','#3BB8C9');
+sb.channel('sync_test_channel')
+  .on('postgres_changes',{event:'UPDATE',schema:'public',table:'show_state'},payload=>{
+    log('🎯 REALTIME RECEIVED: cue_idx='+payload.new.cue_idx+' is_live='+payload.new.is_live,'#4ade80');
+    setStatus('realtime-status','Realtime: ✅ WORKING — received update!','green');
+  })
+  .subscribe(status=>{
+    log('Subscription status: '+status,status==='SUBSCRIBED'?'#4ade80':'#F5D03A');
+    if(status==='SUBSCRIBED'){
+      setStatus('conn-status','● CONNECTED TO SUPABASE','green');
+      setStatus('realtime-status','Realtime: ✅ SUBSCRIBED — waiting for updates','blue');
+    } else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'){
+      setStatus('conn-status','● CONNECTION ERROR','red');
+      setStatus('realtime-status','Realtime: ❌ FAILED','red');
+    }
+  });
+</script>
+</body>
+</html>
