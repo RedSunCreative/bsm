@@ -55,9 +55,11 @@ body.tv-mode .wrap{max-width:100vh;width:100vh;height:100vw;margin:0;transform:r
 .applause-text{font-size:72px;font-weight:900;color:#F5D03A;letter-spacing:8px;text-align:center;}
 .applause-sub{font-size:24px;color:#fff;margin-top:16px;letter-spacing:3px;}
 .applause-close{position:absolute;top:20px;right:20px;background:none;border:2px solid #555;color:#555;padding:10px 16px;border-radius:6px;cursor:pointer;font-size:14px;}
+.applause-reset{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);background:#1a0000;border:2px solid #E8431A;color:#E8431A;padding:14px 28px;border-radius:8px;cursor:pointer;font-size:15px;font-weight:bold;letter-spacing:2px;white-space:nowrap;}
 .allclear-screen{background:#5a6270;border-radius:12px;border:3px solid #4ade80;overflow:hidden;padding:40px 24px;text-align:center;display:none;flex-direction:column;align-items:center;gap:20px;}
 .allclear-text{font-size:36px;font-weight:900;color:#4ade80;line-height:1.3;}
 .allclear-sub{font-size:18px;color:#fff;line-height:1.6;}
+.allclear-reset{padding:16px 32px;background:#1a0000;border:2px solid #E8431A;color:#E8431A;border-radius:8px;cursor:pointer;font-size:15px;font-weight:bold;letter-spacing:2px;margin-top:8px;}
 .progress-bar{height:4px;background:#464d59;}
 .progress-fill{height:100%;background:#3BB8C9;transition:width 0.5s;}
 .tech-tabs{display:flex;border-bottom:2px solid #464d59;background:#464d59;}
@@ -409,6 +411,7 @@ body.tv-mode .wrap{max-width:100vh;width:100vh;height:100vw;margin:0;transform:r
     </svg>
     <div class="allclear-text">ALL CLEAR! 🎉</div>
     <div class="allclear-sub">Great show, everyone!<br>Thank you for making something beautiful tonight.<br><br>Love, Boo 💛</div>
+    <button class="allclear-reset" onclick="resetShow()">↺ START OVER — RESET SHOW</button>
   </div>
 
   <div class="footer">BOO PRODUCTION SUITE · LITTLE BIG VOICES E8</div>
@@ -419,6 +422,7 @@ body.tv-mode .wrap{max-width:100vh;width:100vh;height:100vw;margin:0;transform:r
   <button class="applause-close" onclick="closeApplause()">✕ CLOSE</button>
   <div class="applause-text" id="applause-text">👏 APPLAUSE 👏</div>
   <div class="applause-sub">Thank you!</div>
+  <button class="applause-reset" onclick="resetShow()">↺ START OVER — RESET SHOW</button>
 </div>
 
 <!-- LIVE EDIT OVERLAY -->
@@ -457,7 +461,6 @@ body.tv-mode .wrap{max-width:100vh;width:100vh;height:100vw;margin:0;transform:r
 </div>
 
 <script>
-// ─── SUPABASE ───
 const SB_URL="https://gogudwpuhmidngsbqfjg.supabase.co";
 const SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvZ3Vkd3B1aG1pZG5nc2JxZmpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3MTQ2NTMsImV4cCI6MjA5NDI5MDY1M30.O6n_tRQsMU29wFV_RArcN9n6gP8KSDWJQqM4P6cTq3s";
 const ROW_ID=1;
@@ -489,7 +492,6 @@ function startFallbackPoll(){
 }
 function setSyncBadge(t,c){const el=document.getElementById('sync-badge');if(el){el.textContent=t;el.style.color=c;}}
 
-// ─── STANDBY DEFS ───
 const STANDBY_DEFS=[
   null,null,null,
   {who:"Shannon Cohen",stage:"Pod Stage",isPod:true},
@@ -501,192 +503,30 @@ const STANDBY_DEFS=[
   null,null,null,null,null,null
 ];
 
-// ─── INSERT DEFS ───
 const INSERT_DEFS={
-  spotlight:{dur:3,scene:"LBV SPOTLIGHT VIDEO",liveLabel:"NOW LIVE: LBV SPOTLIGHT VIDEO",
-    booTpl:null,booName:"LBV Spotlight Video",
-    audio:["GO playback — LBV Spotlight Video. TY!"],video:["GO LBV Spotlight Video.mp4"],cameras:["Video playback — stand by all cams"],lighting:["Hold current lighting"]},
-  kitchen:{dur:5,scene:"KITCHEN DISCO CHECK-IN",liveLabel:"NOW LIVE: KITCHEN DISCO CHECK-IN",
-    booTpl:null,booName:"Kitchen Disco Check-in",
-    audio:["GO kitchen mics. TY!"],video:["CAM 6: Kitchen Disco Stage"],cameras:["CAM 6: Kitchen wide and close"],lighting:["Kitchen Disco Stage lighting GO"]},
-  crew:{dur:4,scene:"CREW SPOTLIGHT",liveLabel:"NOW LIVE: CREW SPOTLIGHT",
-    booTpl:null,booName:"Crew Spotlight",
-    audio:["GO host mic — Mark primary. TY!"],video:["CAM 3, 4 — Pod Stage"],cameras:["CAM 3: Wide studio","CAM 4: Mark"],lighting:["Hold current lighting"]},
-  greenroom:{dur:4,scene:"GREEN ROOM CHECK-IN",liveLabel:"NOW LIVE: GREEN ROOM CHECK-IN",
-    booTpl:null,booName:"Green Room Check-in",
-    audio:["GO Green Room mics. TY!"],video:["Green Room cam — stand by"],cameras:["Green Room cam wide"],lighting:["Green Room lighting GO"]},
-  online:{dur:4,scene:"ONLINE AUDIENCE CHECK-IN",liveLabel:"NOW LIVE: ONLINE AUDIENCE CHECK-IN",
-    booTpl:null,booName:"Online Audience Check-in",
-    audio:["GO host mic. TY!"],video:["CAM 4: Mark — online check-in"],cameras:["CAM 4: Mark close"],lighting:["Hold current lighting"]}
+  spotlight:{dur:3,scene:"LBV SPOTLIGHT VIDEO",liveLabel:"NOW LIVE: LBV SPOTLIGHT VIDEO",booTpl:null,booName:"LBV Spotlight Video",audio:["GO playback — LBV Spotlight Video. TY!"],video:["GO LBV Spotlight Video.mp4"],cameras:["Video playback — stand by all cams"],lighting:["Hold current lighting"]},
+  kitchen:{dur:5,scene:"KITCHEN DISCO CHECK-IN",liveLabel:"NOW LIVE: KITCHEN DISCO CHECK-IN",booTpl:null,booName:"Kitchen Disco Check-in",audio:["GO kitchen mics. TY!"],video:["CAM 6: Kitchen Disco Stage"],cameras:["CAM 6: Kitchen wide and close"],lighting:["Kitchen Disco Stage lighting GO"]},
+  crew:{dur:4,scene:"CREW SPOTLIGHT",liveLabel:"NOW LIVE: CREW SPOTLIGHT",booTpl:null,booName:"Crew Spotlight",audio:["GO host mic — Mark primary. TY!"],video:["CAM 3, 4 — Pod Stage"],cameras:["CAM 3: Wide studio","CAM 4: Mark"],lighting:["Hold current lighting"]},
+  greenroom:{dur:4,scene:"GREEN ROOM CHECK-IN",liveLabel:"NOW LIVE: GREEN ROOM CHECK-IN",booTpl:null,booName:"Green Room Check-in",audio:["GO Green Room mics. TY!"],video:["Green Room cam — stand by"],cameras:["Green Room cam wide"],lighting:["Green Room lighting GO"]},
+  online:{dur:4,scene:"ONLINE AUDIENCE CHECK-IN",liveLabel:"NOW LIVE: ONLINE AUDIENCE CHECK-IN",booTpl:null,booName:"Online Audience Check-in",audio:["GO host mic. TY!"],video:["CAM 4: Mark — online check-in"],cameras:["CAM 4: Mark close"],lighting:["Hold current lighting"]}
 };
 
-// ─── CUES ───
 const BASE_CUES=[
-  {dur:20,scene:"PRE-SHOW COUNTDOWN VIDEO",liveLabel:"NOW LIVE: PRE-SHOW COUNTDOWN VIDEO",
-   booName:null,booTpl:"Welcome to Little Big Voices E8 — Little. Big. Transitions. 🎉 The show circle is happening now. We go live in {M}! Please keep your attention on Mark — he'll bring you in when it's time. Thank you! ❤️",
-   w5:null,w2:null,prelive:true,
-   next:"Corey + Solace → Music Stage",nextScene:"COLD OPEN — Life",
-   audio:["Please prep ambient + audience mics","Confirm ALL RECORDS ON (L-20, L-8, ATEM). TY!","Stand by on music mics"],
-   video:["GO stream start. TY!","Stand by — LBV E8 Video Opener"],
-   cameras:["Please power up all cameras and frame","CAM 1: Music Stage wide","CAM 2: Music Stage close","CAM 3: Pod Stage wide"],
-   lighting:["House lights up, please","Stand by for show lighting"],
-   audioNext:["GO music mics + reverb/delay","GO audience mics after LIVE! yell"],
-   videoNext:["GO LBV E8 Video Opener after LIVE! yell"],
-   camerasNext:["CAM 1: Music Stage wide","CAM 2: close","CAM 3: Pod wide"],
-   lightingNext:["Music Stage performance lighting GO"]},
-  {dur:5,scene:"COLD OPEN — Life",liveLabel:"NOW LIVE: COLD OPEN — Life",
-   booName:"Melba + Nancy",booTpl:"Melba — please take your place at the Pod Table. Nancy — please get ready in the Kitchen Disco Stage. Thank you both! 😊",
-   w5:null,w2:"Please wrap up — Mark and Melba, please make your way to the Pod Stage now. Thank you! ❤️",
-   next:"Shannon Cohen → Red X near Pod Stage",nextScene:"POD OPEN",
-   audio:["Music mics up + reverb/delay","Audience mics up on LIVE! yell. TY!"],
-   video:["CAM 1, 2, 3 live — Music Stage","GO LBV E8 Video Opener after LIVE! yell"],
-   cameras:["CAM 1: Music Stage wide","CAM 2: Corey close","CAM 3: wide studio"],
-   lighting:["Music Stage performance lighting"],
-   audioNext:["GO host mics — Mark + Melba. TY!"],
-   videoNext:["CAM 3, 4, 5, 7 — Pod Stage"],
-   camerasNext:["CAM 3: Pod wide","CAM 4: Mark","CAM 5: Melba","CAM 7: Audience"],
-   lightingNext:["Pod Stage lighting"]},
-  {dur:3,scene:"POD OPEN",liveLabel:"NOW LIVE: POD OPEN",
-   booName:null,booTpl:null,w5:null,
-   w2:"Pod Open wrapping — Nancy, please head toward the Kitchen Disco Stage! Thank you! 🎙️",
-   next:"Nancy → Kitchen Disco Stage",nextScene:"KITCHEN DISCO",
-   audio:["Host mics — Mark + Melba live","Audience mics"],
-   video:["CAM 3, 4, 5, 7 — Pod Stage"],
-   cameras:["CAM 3: Pod wide","CAM 4: Mark","CAM 5: Melba","CAM 7: Audience"],
-   lighting:["Pod Stage lighting"],
-   audioNext:["GO kitchen mics. TY!"],
-   videoNext:["CAM 6: Kitchen Disco Stage"],
-   camerasNext:["CAM 6: Kitchen Disco wide"],
-   lightingNext:["Kitchen Disco Stage lighting GO"]},
-  {dur:4,scene:"KITCHEN DISCO",liveLabel:"NOW LIVE: KITCHEN DISCO",
-   booName:"Shannon Cohen",booTpl:"You've got about {M} before you're on the Pod Stage. Please move to the Red X near the Pod Stage and wait for Mark to motion you in. Thank you! 🎙️",
-   w5:null,w2:"Shannon — please move to the Red X near the Pod Stage now and wait for Mark to motion you in. Thank you! ❤️",
-   next:"Shannon Cohen → Red X near Pod Stage",nextScene:"INTERVIEW — Shannon Cohen",
-   audio:["Kitchen mics live","Audience mics"],
-   video:["CAM 6: Kitchen Disco Stage"],
-   cameras:["CAM 6: Nancy wide and close"],
-   lighting:["Kitchen Disco Stage lighting"],
-   audioNext:["GO podcast faders — Mark primary. TY!"],
-   videoNext:["CAM 3, 4, 5 — Pod Stage"],
-   camerasNext:["CAM 3: Pod wide","CAM 4: Mark","CAM 5: Shannon"],
-   lightingNext:["Pod Stage interview lighting"]},
-  {dur:10,scene:"INTERVIEW — Shannon Cohen",liveLabel:"NOW LIVE: INTERVIEW — Shannon Cohen",
-   booName:"Corey + Solace Grove",booTpl:"You've got about {M} before Be Back. Please head toward the Music Stage when you're ready and keep your eye on Mark — he'll kick it off right after he introduces you. Thank you! 🎵",
-   w5:"5 minutes left — Corey and Solace, please make your way to the Music Stage now. Thank you! 😊",
-   w2:"2 minutes — Corey and Solace, please take your places at the Music Stage now. Thank you! ❤️",
-   next:"Corey + Solace → Music Stage",nextScene:"PERFORMANCE — Be Back",
-   audio:["Podcast faders — Mark primary","Audience mics live"],
-   video:["CAM 3, 4, 5 — Pod Stage"],
-   cameras:["CAM 3: Pod wide","CAM 4: Mark","CAM 5: Shannon"],
-   lighting:["Pod Stage interview lighting"],
-   audioNext:["GO music mics + reverb/delay. TY!"],
-   videoNext:["CAM 1, 2, 3 — Music Stage"],
-   camerasNext:["CAM 1: Music Stage wide","CAM 2: Corey close","CAM 3: Solace Grove"],
-   lightingNext:["Music Stage performance lighting"]},
-  {dur:8,scene:"PERFORMANCE — Be Back",liveLabel:"NOW LIVE: PERFORMANCE — Be Back",
-   booName:"Elliot Schnieder",booTpl:"You've got about {M} before you join us on the Pod Stage! Please come out of the Green Room when you're ready and keep your eye on Mark — he'll kick it off right after he introduces you. Shannon will shift one seat for you. Thank you! 😊",
-   w5:null,w2:"Elliot — please move to the Red X near the Pod Stage now and wait for Mark to motion you in. Thank you! ❤️",
-   next:"Elliot Schnieder → Red X near Pod Stage",nextScene:"INTERVIEW — Elliot Schnieder",
-   audio:["Music mics + reverb/delay","Audience mics"],
-   video:["CAM 1, 2, 3 — Music Stage"],
-   cameras:["CAM 1: Music Stage wide","CAM 2: Corey close","CAM 3: Solace Grove"],
-   lighting:["Music Stage performance lighting"],
-   audioNext:["GO podcast faders. TY!"],
-   videoNext:["CAM 3, 4, 5 — Pod Stage"],
-   camerasNext:["CAM 3: Pod wide","CAM 4: Mark","CAM 5: Shannon + Elliot"],
-   lightingNext:["Pod Stage interview lighting"]},
-  {dur:10,scene:"INTERVIEW — Elliot Schnieder",liveLabel:"NOW LIVE: INTERVIEW — Elliot Schnieder",
-   booName:"Joe Mach",booTpl:"You've got about {M} before you join us! We'll play your video first, then you'll join us at the Pod Stage. Please keep your eye on Mark — he'll kick it off right after he introduces you! Thank you! 🙌",
-   w5:"5 minutes left — Joe, please start making your way toward the Pod Stage entry. Thank you! 😊",
-   w2:"Joe — please move to the Red X near the Pod Stage now. Your video is up next, then you're on! Thank you! ❤️",
-   next:"Video: Joe Mach E6",nextScene:"JOE MACH VIDEO — E6",
-   audio:["Podcast faders live","Audience mics"],
-   video:["CAM 3, 4, 5 — Pod Stage","Please prep Joe Mach E6 Video.mp4 in playback. TY!"],
-   cameras:["CAM 3: Pod wide","CAM 4: Mark","CAM 5: Elliot"],
-   lighting:["Pod Stage interview lighting"],
-   audioNext:["GO playback audio — Joe Mach video. TY!"],
-   videoNext:["GO Joe Mach E6 Video.mp4"],
-   camerasNext:["Video playback — please stand by cams for pod"],
-   lightingNext:["Hold Pod Stage lighting"]},
-  {dur:6,scene:"JOE MACH VIDEO — E6",liveLabel:"NOW LIVE: VIDEO — Joe Mach E6",
-   booName:"Joe Mach",booTpl:"That's you on screen! Please head to the Red X near the Pod Stage now and wait for Mark to motion you in. Everyone please shift one seat to make room. Thank you! 🎬",
-   w5:null,w2:"Video wrapping — Joe, please move to the Red X near the Pod Stage now. All guests shift one seat. Thank you! ❤️",
-   next:"Joe Mach → Red X near Pod Stage",nextScene:"INTERVIEW — Joe Mach",
-   audio:["Playback audio live","Kill playback on Mark's cue"],
-   video:["Joe Mach E6 Video.mp4 playing","Please ready CAM 3, 4, 5 for pod. TY!"],
-   cameras:["Please stand by — CAM 3, 4, 5 for Pod Stage"],
-   lighting:["Hold — please ready Pod interview lighting"],
-   audioNext:["GO podcast faders. TY!"],
-   videoNext:["CAM 3, 4, 5 — Pod Stage"],
-   camerasNext:["CAM 3: Pod wide","CAM 4: Mark","CAM 5: Joe Mach"],
-   lightingNext:["Pod Stage interview lighting"]},
-  {dur:10,scene:"INTERVIEW — Joe Mach",liveLabel:"NOW LIVE: INTERVIEW — Joe Mach",
-   booName:"Corey Hopkins",booTpl:"You've got about {M} before Who Is She. Please head toward the Music Stage when you feel ready and keep your eye on Mark — he'll kick it off right after he introduces you. This one's going to be something special! Thank you! 💛",
-   w5:"5 minutes left — Corey, please make your way to the Music Stage now. Thank you! 😊",
-   w2:"Corey — please take your place at the Music Stage now. We can't wait! Thank you! ❤️",
-   next:"Corey Hopkins → Music Stage",nextScene:"PERFORMANCE — Who Is She",
-   audio:["Podcast faders live","Audience mics"],
-   video:["CAM 3, 4, 5 — Pod Stage"],
-   cameras:["CAM 3: Pod wide","CAM 4: Mark","CAM 5: Joe Mach"],
-   lighting:["Pod Stage interview lighting"],
-   audioNext:["GO music mics + reverb/delay. TY!"],
-   videoNext:["CAM 1, 2, 3 — Music Stage"],
-   camerasNext:["CAM 1: Music Stage wide","CAM 2: Corey close","CAM 3: Audience reaction"],
-   lightingNext:["Music Stage performance lighting — Who Is She"]},
-  {dur:8,scene:"PERFORMANCE — Who Is She",liveLabel:"NOW LIVE: PERFORMANCE — Who Is She",
-   booName:null,booTpl:"Everyone — please gather around the Music Stage! Come from the Green Room, Wardrobe, Quiet Room — wherever you are. Give Corey your full presence. Thank you! ✨",
-   w5:null,w2:"2 minutes left — Mark, please start making your way back to the Pod Stage. Thank you! 😊",
-   next:"All guests + crew → Music Stage",nextScene:"CLOSING — Pod Stage",
-   audio:["Music mics + reverb/delay","Audience mics live"],
-   video:["CAM 1, 2, 3 — Music Stage"],
-   cameras:["CAM 1: Music Stage wide","CAM 2: Corey close","CAM 3: Crowd reaction"],
-   lighting:["Music Stage performance lighting"],
-   audioNext:["GO podcast faders. TY!"],
-   videoNext:["CAM 3, 4, 5 — Pod Stage"],
-   camerasNext:["CAM 3: Pod wide","CAM 4: Mark","CAM 5: Guests"],
-   lightingNext:["Pod Stage closing lighting"]},
-  {dur:8,scene:"CLOSING — Pod Stage",liveLabel:"NOW LIVE: CLOSING — Pod Stage",
-   booName:null,booTpl:null,w5:null,
-   w2:"2 minutes to Live Closing — Full cast, please find your places. Let's bring it home! Thank you! 🎉",
-   next:"Full cast → stand by for LIVE Closing",nextScene:"LIVE CLOSING",
-   audio:["Podcast faders live","Audience mics"],
-   video:["CAM 3, 4, 5 — Pod Stage"],
-   cameras:["CAM 3: Pod wide","CAM 4: Mark","CAM 5: Guests"],
-   lighting:["Pod Stage closing lighting"],
-   audioNext:["GO audience + room mics full. TY!"],
-   videoNext:["CAM 4: Mark — LIVE closing"],
-   camerasNext:["CAM 4: Mark close for LIVE closing"],
-   lightingNext:["Full studio lighting for LIVE closing"]},
-  {dur:3,scene:"LIVE CLOSING",liveLabel:"NOW LIVE: LIVE CLOSING",
-   booName:null,booTpl:"Full cast — after LIVE, please head to the Music Stage and Kitchen Disco and be ready to yell LIVE! and then two minutes of dancing during the credits. Let's finish strong! Thank you! 🎉",
-   w5:null,w2:null,
-   next:"Full cast → Music Stage + Kitchen Disco",nextScene:"CREDITS + DANCE",
-   audio:["Audience + room mics full","Kill house mics after LIVE yell"],
-   video:["CAM 4: Mark — LIVE closing"],
-   cameras:["CAM 4: Mark close"],
-   lighting:["Full studio lighting"],
-   audioNext:["GO Ending Video audio","Bring mics back for applause","Fade Master Audio. TY!"],
-   videoNext:["GO Ending Video","Take live Music Stage dancing"],
-   camerasNext:["Music Stage wide","Slider cam GO","CAM 3: Atrium Viewing Area crowd"],
-   lightingNext:["GO disco lighting — Music Stage. TY!"]},
-  {dur:15,scene:"CREDITS + DANCE",liveLabel:"NOW LIVE: CREDITS + DANCE",
-   booName:null,booTpl:"Mark — please hold your position at the Pod Stage until recording stops. Everyone else — the Music Stage and Kitchen Disco are yours. Dance! Thank you all! 🕺",
-   w5:null,w2:null,next:null,nextScene:"APPLAUSE",
-   audio:["Ending Video audio live","Bring mics back for applause","Fade Master Audio","Recording STOPS on Mark's cue. TY!"],
-   video:["Ending Video playing","Take live Music Stage dancing"],
-   cameras:["Music Stage wide","Slider cam — dance floor","CAM 3: Atrium Viewing Area crowd"],
-   lighting:["Disco lighting GO","Fade to black at close"]},
-  {dur:1,scene:"APPLAUSE",liveLabel:"NOW LIVE: APPLAUSE",
-   booName:null,booTpl:null,w5:null,w2:null,
-   next:null,nextScene:"STAND BY TO CLOSE LIVE STREAM",
-   audio:["Audience mics full for applause"],
-   video:["Fade to black"],cameras:["All cams hold"],lighting:["Fade to black"],
-   audioNext:[],videoNext:[],camerasNext:[],lightingNext:[]},
-  {dur:1,scene:"STAND BY TO CLOSE LIVE STREAM",liveLabel:"STAND BY: CLOSING LIVE STREAM",
-   booName:null,booTpl:null,w5:null,w2:null,
-   next:null,nextScene:"ALL CLEAR",
-   audio:["Kill all audio"],video:["Kill stream"],cameras:["All cams off"],lighting:["House lights up"],
-   audioNext:[],videoNext:[],camerasNext:[],lightingNext:[]}
+  {dur:20,scene:"PRE-SHOW COUNTDOWN VIDEO",liveLabel:"NOW LIVE: PRE-SHOW COUNTDOWN VIDEO",booName:null,booTpl:"Welcome to Little Big Voices E8 — Little. Big. Transitions. 🎉 The show circle is happening now. We go live in {M}! Please keep your attention on Mark — he'll bring you in when it's time. Thank you! ❤️",w5:null,w2:null,prelive:true,next:"Corey + Solace → Music Stage",nextScene:"COLD OPEN — Life",audio:["Please prep ambient + audience mics","Confirm ALL RECORDS ON (L-20, L-8, ATEM). TY!","Stand by on music mics"],video:["GO stream start. TY!","Stand by — LBV E8 Video Opener"],cameras:["Please power up all cameras and frame","CAM 1: Music Stage wide","CAM 2: Music Stage close","CAM 3: Pod Stage wide"],lighting:["House lights up, please","Stand by for show lighting"],audioNext:["GO music mics + reverb/delay","GO audience mics after LIVE! yell"],videoNext:["GO LBV E8 Video Opener after LIVE! yell"],camerasNext:["CAM 1: Music Stage wide","CAM 2: close","CAM 3: Pod wide"],lightingNext:["Music Stage performance lighting GO"]},
+  {dur:5,scene:"COLD OPEN — Life",liveLabel:"NOW LIVE: COLD OPEN — Life",booName:"Melba + Nancy",booTpl:"Melba — please take your place at the Pod Table. Nancy — please get ready in the Kitchen Disco Stage. Thank you both! 😊",w5:null,w2:"Please wrap up — Mark and Melba, please make your way to the Pod Stage now. Thank you! ❤️",next:"Shannon Cohen → Red X near Pod Stage",nextScene:"POD OPEN",audio:["Music mics up + reverb/delay","Audience mics up on LIVE! yell. TY!"],video:["CAM 1, 2, 3 live — Music Stage","GO LBV E8 Video Opener after LIVE! yell"],cameras:["CAM 1: Music Stage wide","CAM 2: Corey close","CAM 3: wide studio"],lighting:["Music Stage performance lighting"],audioNext:["GO host mics — Mark + Melba. TY!"],videoNext:["CAM 3, 4, 5, 7 — Pod Stage"],camerasNext:["CAM 3: Pod wide","CAM 4: Mark","CAM 5: Melba","CAM 7: Audience"],lightingNext:["Pod Stage lighting"]},
+  {dur:3,scene:"POD OPEN",liveLabel:"NOW LIVE: POD OPEN",booName:null,booTpl:null,w5:null,w2:"Pod Open wrapping — Nancy, please head toward the Kitchen Disco Stage! Thank you! 🎙️",next:"Nancy → Kitchen Disco Stage",nextScene:"KITCHEN DISCO",audio:["Host mics — Mark + Melba live","Audience mics"],video:["CAM 3, 4, 5, 7 — Pod Stage"],cameras:["CAM 3: Pod wide","CAM 4: Mark","CAM 5: Melba","CAM 7: Audience"],lighting:["Pod Stage lighting"],audioNext:["GO kitchen mics. TY!"],videoNext:["CAM 6: Kitchen Disco Stage"],camerasNext:["CAM 6: Kitchen Disco wide"],lightingNext:["Kitchen Disco Stage lighting GO"]},
+  {dur:4,scene:"KITCHEN DISCO",liveLabel:"NOW LIVE: KITCHEN DISCO",booName:"Shannon Cohen",booTpl:"You've got about {M} before you're on the Pod Stage. Please move to the Red X near the Pod Stage and wait for Mark to motion you in. Thank you! 🎙️",w5:null,w2:"Shannon — please move to the Red X near the Pod Stage now and wait for Mark to motion you in. Thank you! ❤️",next:"Shannon Cohen → Red X near Pod Stage",nextScene:"INTERVIEW — Shannon Cohen",audio:["Kitchen mics live","Audience mics"],video:["CAM 6: Kitchen Disco Stage"],cameras:["CAM 6: Nancy wide and close"],lighting:["Kitchen Disco Stage lighting"],audioNext:["GO podcast faders — Mark primary. TY!"],videoNext:["CAM 3, 4, 5 — Pod Stage"],camerasNext:["CAM 3: Pod wide","CAM 4: Mark","CAM 5: Shannon"],lightingNext:["Pod Stage interview lighting"]},
+  {dur:10,scene:"INTERVIEW — Shannon Cohen",liveLabel:"NOW LIVE: INTERVIEW — Shannon Cohen",booName:"Corey + Solace Grove",booTpl:"You've got about {M} before Be Back. Please head toward the Music Stage when you're ready and keep your eye on Mark — he'll kick it off right after he introduces you. Thank you! 🎵",w5:"5 minutes left — Corey and Solace, please make your way to the Music Stage now. Thank you! 😊",w2:"2 minutes — Corey and Solace, please take your places at the Music Stage now. Thank you! ❤️",next:"Corey + Solace → Music Stage",nextScene:"PERFORMANCE — Be Back",audio:["Podcast faders — Mark primary","Audience mics live"],video:["CAM 3, 4, 5 — Pod Stage"],cameras:["CAM 3: Pod wide","CAM 4: Mark","CAM 5: Shannon"],lighting:["Pod Stage interview lighting"],audioNext:["GO music mics + reverb/delay. TY!"],videoNext:["CAM 1, 2, 3 — Music Stage"],camerasNext:["CAM 1: Music Stage wide","CAM 2: Corey close","CAM 3: Solace Grove"],lightingNext:["Music Stage performance lighting"]},
+  {dur:8,scene:"PERFORMANCE — Be Back",liveLabel:"NOW LIVE: PERFORMANCE — Be Back",booName:"Elliot Schnieder",booTpl:"You've got about {M} before you join us on the Pod Stage! Please come out of the Green Room when you're ready and keep your eye on Mark — he'll kick it off right after he introduces you. Shannon will shift one seat for you. Thank you! 😊",w5:null,w2:"Elliot — please move to the Red X near the Pod Stage now and wait for Mark to motion you in. Thank you! ❤️",next:"Elliot Schnieder → Red X near Pod Stage",nextScene:"INTERVIEW — Elliot Schnieder",audio:["Music mics + reverb/delay","Audience mics"],video:["CAM 1, 2, 3 — Music Stage"],cameras:["CAM 1: Music Stage wide","CAM 2: Corey close","CAM 3: Solace Grove"],lighting:["Music Stage performance lighting"],audioNext:["GO podcast faders. TY!"],videoNext:["CAM 3, 4, 5 — Pod Stage"],camerasNext:["CAM 3: Pod wide","CAM 4: Mark","CAM 5: Shannon + Elliot"],lightingNext:["Pod Stage interview lighting"]},
+  {dur:10,scene:"INTERVIEW — Elliot Schnieder",liveLabel:"NOW LIVE: INTERVIEW — Elliot Schnieder",booName:"Joe Mach",booTpl:"You've got about {M} before you join us! We'll play your video first, then you'll join us at the Pod Stage. Please keep your eye on Mark — he'll kick it off right after he introduces you! Thank you! 🙌",w5:"5 minutes left — Joe, please start making your way toward the Pod Stage entry. Thank you! 😊",w2:"Joe — please move to the Red X near the Pod Stage now. Your video is up next, then you're on! Thank you! ❤️",next:"Video: Joe Mach E6",nextScene:"JOE MACH VIDEO — E6",audio:["Podcast faders live","Audience mics"],video:["CAM 3, 4, 5 — Pod Stage","Please prep Joe Mach E6 Video.mp4 in playback. TY!"],cameras:["CAM 3: Pod wide","CAM 4: Mark","CAM 5: Elliot"],lighting:["Pod Stage interview lighting"],audioNext:["GO playback audio — Joe Mach video. TY!"],videoNext:["GO Joe Mach E6 Video.mp4"],camerasNext:["Video playback — please stand by cams for pod"],lightingNext:["Hold Pod Stage lighting"]},
+  {dur:6,scene:"JOE MACH VIDEO — E6",liveLabel:"NOW LIVE: VIDEO — Joe Mach E6",booName:"Joe Mach",booTpl:"That's you on screen! Please head to the Red X near the Pod Stage now and wait for Mark to motion you in. Everyone please shift one seat to make room. Thank you! 🎬",w5:null,w2:"Video wrapping — Joe, please move to the Red X near the Pod Stage now. All guests shift one seat. Thank you! ❤️",next:"Joe Mach → Red X near Pod Stage",nextScene:"INTERVIEW — Joe Mach",audio:["Playback audio live","Kill playback on Mark's cue"],video:["Joe Mach E6 Video.mp4 playing","Please ready CAM 3, 4, 5 for pod. TY!"],cameras:["Please stand by — CAM 3, 4, 5 for Pod Stage"],lighting:["Hold — please ready Pod interview lighting"],audioNext:["GO podcast faders. TY!"],videoNext:["CAM 3, 4, 5 — Pod Stage"],camerasNext:["CAM 3: Pod wide","CAM 4: Mark","CAM 5: Joe Mach"],lightingNext:["Pod Stage interview lighting"]},
+  {dur:10,scene:"INTERVIEW — Joe Mach",liveLabel:"NOW LIVE: INTERVIEW — Joe Mach",booName:"Corey Hopkins",booTpl:"You've got about {M} before Who Is She. Please head toward the Music Stage when you feel ready and keep your eye on Mark — he'll kick it off right after he introduces you. This one's going to be something special! Thank you! 💛",w5:"5 minutes left — Corey, please make your way to the Music Stage now. Thank you! 😊",w2:"Corey — please take your place at the Music Stage now. We can't wait! Thank you! ❤️",next:"Corey Hopkins → Music Stage",nextScene:"PERFORMANCE — Who Is She",audio:["Podcast faders live","Audience mics"],video:["CAM 3, 4, 5 — Pod Stage"],cameras:["CAM 3: Pod wide","CAM 4: Mark","CAM 5: Joe Mach"],lighting:["Pod Stage interview lighting"],audioNext:["GO music mics + reverb/delay. TY!"],videoNext:["CAM 1, 2, 3 — Music Stage"],camerasNext:["CAM 1: Music Stage wide","CAM 2: Corey close","CAM 3: Audience reaction"],lightingNext:["Music Stage performance lighting — Who Is She"]},
+  {dur:8,scene:"PERFORMANCE — Who Is She",liveLabel:"NOW LIVE: PERFORMANCE — Who Is She",booName:null,booTpl:"Everyone — please gather around the Music Stage! Come from the Green Room, Wardrobe, Quiet Room — wherever you are. Give Corey your full presence. Thank you! ✨",w5:null,w2:"2 minutes left — Mark, please start making your way back to the Pod Stage. Thank you! 😊",next:"All guests + crew → Music Stage",nextScene:"CLOSING — Pod Stage",audio:["Music mics + reverb/delay","Audience mics live"],video:["CAM 1, 2, 3 — Music Stage"],cameras:["CAM 1: Music Stage wide","CAM 2: Corey close","CAM 3: Crowd reaction"],lighting:["Music Stage performance lighting"],audioNext:["GO podcast faders. TY!"],videoNext:["CAM 3, 4, 5 — Pod Stage"],camerasNext:["CAM 3: Pod wide","CAM 4: Mark","CAM 5: Guests"],lightingNext:["Pod Stage closing lighting"]},
+  {dur:8,scene:"CLOSING — Pod Stage",liveLabel:"NOW LIVE: CLOSING — Pod Stage",booName:null,booTpl:null,w5:null,w2:"2 minutes to Live Closing — Full cast, please find your places. Let's bring it home! Thank you! 🎉",next:"Full cast → stand by for LIVE Closing",nextScene:"LIVE CLOSING",audio:["Podcast faders live","Audience mics"],video:["CAM 3, 4, 5 — Pod Stage"],cameras:["CAM 3: Pod wide","CAM 4: Mark","CAM 5: Guests"],lighting:["Pod Stage closing lighting"],audioNext:["GO audience + room mics full. TY!"],videoNext:["CAM 4: Mark — LIVE closing"],camerasNext:["CAM 4: Mark close for LIVE closing"],lightingNext:["Full studio lighting for LIVE closing"]},
+  {dur:3,scene:"LIVE CLOSING",liveLabel:"NOW LIVE: LIVE CLOSING",booName:null,booTpl:"Full cast — after LIVE, please head to the Music Stage and Kitchen Disco and be ready to yell LIVE! and then two minutes of dancing during the credits. Let's finish strong! Thank you! 🎉",w5:null,w2:null,next:"Full cast → Music Stage + Kitchen Disco",nextScene:"CREDITS + DANCE",audio:["Audience + room mics full","Kill house mics after LIVE yell"],video:["CAM 4: Mark — LIVE closing"],cameras:["CAM 4: Mark close"],lighting:["Full studio lighting"],audioNext:["GO Ending Video audio","Bring mics back for applause","Fade Master Audio. TY!"],videoNext:["GO Ending Video","Take live Music Stage dancing"],camerasNext:["Music Stage wide","Slider cam GO","CAM 3: Atrium Viewing Area crowd"],lightingNext:["GO disco lighting — Music Stage. TY!"]},
+  {dur:15,scene:"CREDITS + DANCE",liveLabel:"NOW LIVE: CREDITS + DANCE",booName:null,booTpl:"Mark — please hold your position at the Pod Stage until recording stops. Everyone else — the Music Stage and Kitchen Disco are yours. Dance! Thank you all! 🕺",w5:null,w2:null,next:null,nextScene:"APPLAUSE",audio:["Ending Video audio live","Bring mics back for applause","Fade Master Audio","Recording STOPS on Mark's cue. TY!"],video:["Ending Video playing","Take live Music Stage dancing"],cameras:["Music Stage wide","Slider cam — dance floor","CAM 3: Atrium Viewing Area crowd"],lighting:["Disco lighting GO","Fade to black at close"]},
+  {dur:1,scene:"APPLAUSE",liveLabel:"NOW LIVE: APPLAUSE",booName:null,booTpl:null,w5:null,w2:null,next:null,nextScene:"STAND BY TO CLOSE LIVE STREAM",audio:["Audience mics full for applause"],video:["Fade to black"],cameras:["All cams hold"],lighting:["Fade to black"],audioNext:[],videoNext:[],camerasNext:[],lightingNext:[]},
+  {dur:1,scene:"STAND BY TO CLOSE LIVE STREAM",liveLabel:"STAND BY: CLOSING LIVE STREAM",booName:null,booTpl:null,w5:null,w2:null,next:null,nextScene:"ALL CLEAR",audio:["Kill all audio"],video:["Kill stream"],cameras:["All cams off"],lighting:["House lights up"],audioNext:[],videoNext:[],camerasNext:[],lightingNext:[]}
 ];
 
 let CUES=[...BASE_CUES];
@@ -700,7 +540,6 @@ let showTimerStarted=false;
 let currentInsertStandby=null;
 const PIN="5000",PIN_DURATION=24*60*60*1000;
 let pinEntry="",pinUnlockedUntil=0;
-let tvMode=false;
 
 window.addEventListener('load',async()=>{
   ['qr-tv-welcome'].forEach(id=>{
@@ -709,14 +548,19 @@ window.addEventListener('load',async()=>{
   });
   startRealtime();
   const state=await sbGet();
-  if(state&&(state.is_live||parseInt(state.cue_idx)>0)){
-    cueIdx=parseInt(state.cue_idx)||0;
-    segSecs=CUES[cueIdx]?.dur*60||0;
-    showLive=!!state.is_live;
-    showTimerStarted=cueIdx>0;
-    showLiveUI();
-    running=true;timerInt=setInterval(tick,1000);
-    applyRemoteState(state);
+  if(state){
+    // If stuck on applause or end state, clear it automatically on load
+    if(state.ros_change_msg==="__APPLAUSE__"||(!state.is_live&&parseInt(state.cue_idx)===0)){
+      // don't restore applause state on reload — let it start fresh
+    } else if(state.is_live||parseInt(state.cue_idx)>0){
+      cueIdx=parseInt(state.cue_idx)||0;
+      segSecs=CUES[cueIdx]?.dur*60||0;
+      showLive=!!state.is_live;
+      showTimerStarted=cueIdx>0;
+      showLiveUI();
+      running=true;timerInt=setInterval(tick,1000);
+      applyRemoteState(state);
+    }
   }
 });
 
@@ -728,10 +572,8 @@ setInterval(()=>{
   ['tv-nl-dot','tech-nl-dot','host-nl-dot','tv-standby-dot'].forEach(id=>{
     const el=document.getElementById(id);if(el) el.style.opacity=flashOn?"1":"0.2";
   });
-  // Flash guest name in boo card
   const nameEl=document.getElementById('boo-name-flash-el');
   if(nameEl) nameEl.style.color=flashOn?"#F5D03A":"#E8431A";
-  // Flash applause
   const appl=document.getElementById('applause-text');
   if(appl&&document.getElementById('applause-banner').style.display!=='none'){
     appl.style.color=flashOn?"#F5D03A":"#fff";
@@ -764,15 +606,11 @@ function getBooMsg(){
   const c=CUES[cueIdx];
   if(!c) return null;
   if(cueIdx===0&&preLiveFired) return null;
-  if(standbyActive&&currentInsertStandby) return null; // suppress when insert standby active
+  if(standbyActive&&currentInsertStandby) return null;
   const m=Math.max(1,Math.ceil(segSecs/60));
   const min=m===1?"minute":"minutes";
-  if(c.booName&&c.booTpl){
-    return {name:c.booName,msg:c.booTpl.replace("{M}",`${m} ${min}`)};
-  }
-  if(c.booTpl&&!c.booName){
-    return {name:null,msg:c.booTpl.replace("{M}",`${m} ${min}`)};
-  }
+  if(c.booName&&c.booTpl) return {name:c.booName,msg:c.booTpl.replace("{M}",`${m} ${min}`)};
+  if(c.booTpl&&!c.booName) return {name:null,msg:c.booTpl.replace("{M}",`${m} ${min}`)};
   return null;
 }
 
@@ -781,13 +619,9 @@ function setNowLiveLabels(label){const lbl=label||CUES[cueIdx]?.liveLabel||"";['
 
 function fireROSChangeMessage(nextName){
   const banner=document.getElementById("ros-change-banner"),msg=document.getElementById("ros-change-msg");
-  if(banner&&msg){
-    msg.textContent=`Run of Show Update: Next up is ${nextName}. TY!`;
-    banner.style.display="block";
-  }
+  if(banner&&msg){msg.textContent=`Run of Show Update: Next up is ${nextName}. TY!`;banner.style.display="block";}
   sbSet({ros_change_msg:`Run of Show Update: Next up is ${nextName}. TY!`});
 }
-
 function clearROSBanner(){
   const banner=document.getElementById("ros-change-banner");
   if(banner) banner.style.display="none";
@@ -819,7 +653,6 @@ function firePreLive(){
 }
 
 function fireStandby(){
-  // Use current insert standby if set, otherwise use cue standby def
   const sd=currentInsertStandby||STANDBY_DEFS[cueIdx];
   if(!sd) return;
   standbyActive=!standbyActive;
@@ -829,8 +662,7 @@ function fireStandby(){
     document.getElementById("standby-where").textContent="→ "+sd.stage;
     document.getElementById("standby-inst").textContent=sd.isPod
       ?"Please move to the Red X near the Pod Stage and wait for Mark to motion you in. Thank you!"
-      :sd.isVideo
-      ?"Please stand by to play "+sd.stage+". Thank you!"
+      :sd.isVideo?"Please stand by to play "+sd.stage+". Thank you!"
       :"Please take your place at the "+sd.stage+" and stand by for Mark's cue. Thank you!";
     banner.style.display="block";
     if(btn){btn.textContent="✕ CLEAR STAND BY";btn.style.borderColor="#E8431A";btn.style.color="#E8431A";}
@@ -854,7 +686,6 @@ function closeApplause(){
 }
 
 function showLiveUI(){
-  const liveViews={tv:"view-tv",tech:"view-tech",host:"view-host","tv-welcome":"view-tv","tech-welcome":"view-tech","host-welcome":"view-host"};
   if(view==="tv"||view==="tv-welcome"){
     document.getElementById("view-tv-welcome").style.display="none";
     document.getElementById("view-tv").style.display="block";
@@ -888,7 +719,6 @@ function applyRemoteState(state){
     else if(view==="tech") setView("tech-welcome");
     return;
   }
-
   if(showLive&&!wasLive){
     cueIdx=newIdx;segSecs=CUES[newIdx]?.dur*60||0;
     showLiveUI();running=true;timerInt=setInterval(tick,1000);
@@ -896,7 +726,6 @@ function applyRemoteState(state){
     cueIdx=newIdx;segSecs=CUES[newIdx]?.dur*60||0;
     warning=null;clearInterval(timerInt);running=true;timerInt=setInterval(tick,1000);
   }
-
   const newStandby=!!state.standby_active;
   if(newStandby!==standbyActive){
     standbyActive=newStandby;
@@ -909,7 +738,6 @@ function applyRemoteState(state){
       banner.style.display="block";
     } else if(banner) banner.style.display="none";
   }
-
   const newPrelive=!!state.prelive_active;
   if(newPrelive!==preLiveActive){
     preLiveActive=newPrelive;
@@ -927,40 +755,30 @@ function applyRemoteState(state){
       setNowLiveLabels("NOW LIVE: 2 MINUTE WARNING COUNTDOWN");
     } else if(banner) banner.style.display="none";
   }
-
-  // ROS change / Applause
+  // ROS / Applause — never restore __APPLAUSE__ on remote state after page load
   if(state.ros_change_msg==="__APPLAUSE__"){
-    const banner=document.getElementById("applause-banner");
-    if(banner) banner.style.display="flex";
+    // Only show if we're mid-show, not on fresh load
+    if(showLive){const banner=document.getElementById("applause-banner");if(banner) banner.style.display="flex";}
   } else if(state.ros_change_msg&&state.ros_change_msg.length>2){
     const banner=document.getElementById("ros-change-banner"),msg=document.getElementById("ros-change-msg");
     if(banner&&msg){msg.textContent=state.ros_change_msg;banner.style.display="block";}
   } else {
-    const banner=document.getElementById("ros-change-banner");
-    if(banner) banner.style.display="none";
-    const appl=document.getElementById("applause-banner");
-    if(appl&&state.ros_change_msg==="") appl.style.display="none";
+    const banner=document.getElementById("ros-change-banner");if(banner) banner.style.display="none";
+    const appl=document.getElementById("applause-banner");if(appl&&state.ros_change_msg==="") appl.style.display="none";
   }
-
   if(showLive) render();
 }
 
 function render(){
   if(!CUES[cueIdx]) return;
   const c=CUES[cueIdx],sc=segColor();
-
-  // Handle special final screens
-  if(c.scene==="APPLAUSE"){
-    document.getElementById("applause-banner").style.display="flex";
-  }
+  if(c.scene==="APPLAUSE") document.getElementById("applause-banner").style.display="flex";
   if(c.scene==="STAND BY TO CLOSE LIVE STREAM"){
     const tvs=document.getElementById("tv-scene");if(tvs) tvs.textContent="STAND BY TO CLOSE LIVE STREAM";
     setNowLiveLabels("STAND BY: CLOSING LIVE STREAM");
   }
-
   ["tv-seg","h-seg","tech-seg"].forEach(id=>{const el=document.getElementById(id);if(el){el.textContent=fmt(segSecs);el.style.color=sc;}});
   ["tv-show","h-show","tech-show"].forEach(id=>{const el=document.getElementById(id);if(el) el.textContent=fmt(showTimerStarted?showSecs:90*60);});
-
   if(!preLiveActive&&c.scene!=="STAND BY TO CLOSE LIVE STREAM"){
     const tvs=document.getElementById("tv-scene");if(tvs) tvs.textContent=c.scene;
     setNowLiveLabels(c.liveLabel);
@@ -968,41 +786,27 @@ function render(){
   const hs=document.getElementById("h-scene");if(hs) hs.textContent=c.scene;
   ["progress","tech-progress"].forEach(id=>{const el=document.getElementById(id);if(el) el.style.width=`${(cueIdx/(CUES.length-1))*100}%`;});
   const sb2=document.getElementById("schedule-badge");if(sb2){const t=fmtOffset(scheduleOffset);sb2.textContent=t;sb2.style.color=t==="ON SCHEDULE"?"#C4B9A8":scheduleOffset>0?"#4ade80":"#E8431A";}
-
-  // Boo card
   const bc=document.getElementById("boo-card"),bm=document.getElementById("boo-msg");
   const booData=getBooMsg();
   if(bc&&bm){
     if(booData&&!standbyActive&&!preLiveActive){
       bc.style.display="block";
-      if(booData.name){
-        bm.innerHTML=`<span class="boo-name-flash" id="boo-name-flash-el" style="color:#F5D03A;">${booData.name}</span>${booData.msg}`;
-      } else {
-        bm.innerHTML=booData.msg;
-      }
+      if(booData.name) bm.innerHTML=`<span class="boo-name-flash" id="boo-name-flash-el" style="color:#F5D03A;">${booData.name}</span>${booData.msg}`;
+      else bm.innerHTML=booData.msg;
     } else bc.style.display="none";
   }
-
-  // Warnings
   const wb=document.getElementById("warn-banner"),wt=document.getElementById("warn-tag"),wm=document.getElementById("warn-msg");
   if(wb&&wt&&wm){
     const wmsg=warning==="over"?c.w2||c.w5:warning==="2"?c.w2:warning==="5"?c.w5:null;
     if(warning&&wmsg){wb.style.display="block";wt.style.color=segColor();wt.textContent=warning==="over"?"⏱ WRAP UP":warning==="2"?"⚡ 2 MIN":"🔔 5 MIN";wm.textContent=wmsg;applyFlash();}
     else wb.style.display="none";
   }
-
-  // Up next
   const nextData=getNextActiveCue();
   const un=document.getElementById("up-next");
   if(un){
-    if(nextData){
-      un.style.display="block";
-      document.getElementById("un-scene").textContent=nextData.cue.scene;
-      document.getElementById("un-cue").textContent=c.next||"";
-    } else un.style.display="none";
+    if(nextData){un.style.display="block";document.getElementById("un-scene").textContent=nextData.cue.scene;document.getElementById("un-cue").textContent=c.next||"";}
+    else un.style.display="none";
   }
-
-  // Tech
   const nowTitle=document.getElementById("tech-now-title");if(nowTitle) nowTitle.textContent=`NOW — ${c.scene}`;
   const nowLines=document.getElementById("tech-now-lines"),nextLines=document.getElementById("tech-next-lines"),nextLabel=document.getElementById("tech-next-label");
   if(nowLines&&nextLines){
@@ -1014,14 +818,9 @@ function render(){
     nowLines.innerHTML=renderTechLines(now);nextLines.innerHTML=renderTechLines(nxt);
     if(nextLabel) nextLabel.textContent=nc?`UP NEXT · ${nc.scene}`:"END OF SHOW";
   }
-
-  // Host buttons
   const plbtn=document.getElementById("prelive-btn");if(plbtn) plbtn.style.display=cueIdx===0?"block":"none";
   const stbtn=document.getElementById("standby-btn");
-  if(stbtn){
-    const hasDef=STANDBY_DEFS[cueIdx]||currentInsertStandby;
-    stbtn.style.display=hasDef?"block":"none";
-  }
+  if(stbtn){const hasDef=STANDBY_DEFS[cueIdx]||currentInsertStandby;stbtn.style.display=hasDef?"block":"none";}
   const leb=document.getElementById("live-edit-btn");if(leb) leb.style.display=showLive?"block":"none";
   const apb=document.getElementById("applause-host-btn");if(apb) apb.style.display=showLive?"block":"none";
   const bb=document.getElementById("back-btn"),nb=document.getElementById("next-btn");
@@ -1056,25 +855,17 @@ function addTime(m){segSecs+=m*60;if(showTimerStarted) showSecs+=m*60;scheduleOf
 
 function goNext(){
   if(cueIdx>=CUES.length-1){
-    // ALL CLEAR
     ["view-tv","view-tech","view-host"].forEach(id=>{const el=document.getElementById(id);if(el) el.style.display="none";});
     document.getElementById("view-allclear").style.display="flex";
-    sbSet({is_live:false,cue_idx:0});
+    sbSet({is_live:false,cue_idx:0,ros_change_msg:""});
     return;
   }
   scheduleOffset+=segSecs;clearInterval(timerInt);warning=null;clearBanners();clearROSBanner();
   let next=cueIdx+1;
   while(next<CUES.length-1&&removedIndices.has(next)) next++;
   cueIdx=next;segSecs=CUES[cueIdx].dur*60;
-
-  // Start show timer on Cold Open (cue 1)
   if(cueIdx===1&&!showTimerStarted){showTimerStarted=true;showSecs=90*60;}
-
-  // Handle special cues
-  if(CUES[cueIdx].scene==="APPLAUSE"){
-    fireApplause();
-  }
-
+  if(CUES[cueIdx].scene==="APPLAUSE") fireApplause();
   currentInsertStandby=null;
   running=true;timerInt=setInterval(tick,1000);
   sbSet({cue_idx:cueIdx,is_live:true,standby_active:false,prelive_active:false});
@@ -1100,11 +891,13 @@ function resetShow(){
   scheduleOffset=0;removedIndices=new Set();CUES=[...BASE_CUES];
   currentInsertStandby=null;
   clearBanners();
+  // Hide applause and allclear screens
+  const appl=document.getElementById("applause-banner");if(appl) appl.style.display="none";
+  const ac=document.getElementById("view-allclear");if(ac) ac.style.display="none";
   sbSet({cue_idx:0,is_live:false,standby_active:false,prelive_active:false,ros_change_msg:""});
   setView("host-welcome");
 }
 
-// LIVE EDIT
 function openLiveEdit(){pendingInsert=null;document.getElementById("confirm-card").style.display="none";document.getElementById("insert-section").style.display="block";document.getElementById("custom-input-wrap").style.display="none";buildCueList();document.getElementById("live-edit-overlay").style.display="block";document.body.style.overflow="hidden";}
 function closeLiveEdit(){document.getElementById("live-edit-overlay").style.display="none";document.body.style.overflow="";pendingInsert=null;}
 
@@ -1135,9 +928,7 @@ function proposeCustom(){
   const val=document.getElementById("custom-segment-input").value.trim();if(!val) return;
   let targetIdx=-1;for(let i=cueIdx+1;i<CUES.length;i++){if(removedIndices.has(i)){targetIdx=i;break;}}
   if(targetIdx===-1) targetIdx=cueIdx+1;
-  const seg={dur:4,scene:val.toUpperCase(),liveLabel:`NOW LIVE: ${val.toUpperCase()}`,booName:null,
-    booTpl:`Please stand by — we are updating the run of show slightly. Next up is ${val}. Thank you! 😊`,
-    audio:["GO host mic. TY!"],video:["CAM 3, 4 — Pod Stage"],cameras:["CAM 3: Wide","CAM 4: Mark"],lighting:["Hold current lighting"]};
+  const seg={dur:4,scene:val.toUpperCase(),liveLabel:`NOW LIVE: ${val.toUpperCase()}`,booName:null,booTpl:`Please stand by — we are updating the run of show slightly. Next up is ${val}. Thank you! 😊`,audio:["GO host mic. TY!"],video:["CAM 3, 4 — Pod Stage"],cameras:["CAM 3: Wide","CAM 4: Mark"],lighting:["Hold current lighting"]};
   pendingInsert={type:"custom",targetIdx,seg};
   document.getElementById("confirm-detail").innerHTML=`Replace <strong style="color:#E8431A;">${removedIndices.has(targetIdx)?CUES[targetIdx].scene:"[insert after current]"}</strong><br>with <strong style="color:#4ade80;">${seg.scene}</strong> (${seg.dur} min)?`;
   document.getElementById("confirm-card").style.display="flex";document.getElementById("insert-section").style.display="none";
@@ -1149,7 +940,6 @@ function confirmInsert(){
   const newCue={...seg,next:`${seg.booName||seg.scene}`,nextScene:null,nextTime:null,w5:null,w2:null,audioNext:[],videoNext:[],camerasNext:[],lightingNext:[]};
   if(removedIndices.has(targetIdx)){CUES[targetIdx]=newCue;removedIndices.delete(targetIdx);}
   else{CUES.splice(targetIdx,0,newCue);}
-  // Set standby for the inserted segment
   currentInsertStandby={who:seg.booName||seg.scene,stage:seg.booName||"upcoming segment",isPod:false,isVideo:seg.scene.includes("VIDEO")};
   fireROSChangeMessage(seg.booName||seg.scene);
   pendingInsert=null;buildCueList();closeLiveEdit();render();
