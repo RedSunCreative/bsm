@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
 <title>Boo Show Manager · LBV E8</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -21,7 +21,7 @@ body.tv-mode .wrap{max-width:100vh;width:100vh;height:100vw;margin:0;transform:r
 .top-bar{background:#464d59;padding:10px 16px;display:flex;justify-content:space-between;align-items:center;gap:8px;}
 .boo-id{display:flex;align-items:center;gap:8px;flex:1;min-width:0;}
 .boo-name{display:flex;flex-direction:column;min-width:0;}
-.boo-name-main{font-size:11px;color:#F5D03A;font-weight:bold;letter-spacing:1px;white-space:nowrap;}
+.boo-name-main{font-size:11px;color:#F5D03A;font-weight:bold;letter-spacing:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px;}
 .boo-name-sub{font-size:9px;color:#C4B9A8;letter-spacing:1px;white-space:nowrap;}
 .timers{display:flex;gap:10px;align-items:center;flex-shrink:0;}
 .timer-block{text-align:center;}
@@ -114,7 +114,7 @@ body.tv-mode .wrap{max-width:100vh;width:100vh;height:100vw;margin:0;transform:r
 .pin-screen{background:#464d59;border-radius:12px;border:2px solid #5a6270;padding:30px 20px;display:flex;flex-direction:column;align-items:center;gap:16px;}
 .pin-display{font-size:36px;font-weight:900;letter-spacing:12px;color:#fff;min-height:50px;text-align:center;}
 .pin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;}
-.pin-btn{padding:18px 0;background:#5a6270;border:1px solid #6a7280;border-radius:8px;color:#fff;font-size:20px;font-weight:bold;cursor:pointer;}
+.pin-btn{padding:18px 0;background:#5a6270;border:1px solid #6a7280;border-radius:8px;color:#fff;font-size:20px;font-weight:bold;cursor:pointer;-webkit-text-size-adjust:none;}
 .pin-error{font-size:12px;color:#E8431A;letter-spacing:2px;min-height:18px;}
 .welcome-card{background:#5a6270;border-radius:12px;border:3px solid #464d59;overflow:hidden;display:flex;flex-direction:column;align-items:center;padding:24px 22px;gap:16px;text-align:center;}
 .welcome-show{font-size:28px;color:#fff;font-weight:900;line-height:1.2;}
@@ -138,7 +138,7 @@ body.tv-mode .wrap{max-width:100vh;width:100vh;height:100vw;margin:0;transform:r
     <button class="toggle-btn" id="btn-tv" onclick="setView('tv')">📺 TV</button>
     <button class="toggle-btn" id="btn-tech" onclick="setView('tech')">🎛️ TECH</button>
     <button class="toggle-btn" id="btn-host" onclick="tryHost()">🎙️ HOST ONLY</button>
-    <button class="toggle-btn" id="btn-rotate" onclick="toggleTVMode()" style="max-width:48px;">⟳</button>
+    <button class="toggle-btn" id="btn-rotate" onclick="toggleTVMode()" style="flex:0 0 44px;font-size:16px;">⟳</button>
   </div>
   <div class="sync-badge" id="sync-badge" style="color:#F5D03A;">● CONNECTING...</div>
 
