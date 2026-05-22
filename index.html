@@ -1005,8 +1005,13 @@ function cycleRotation(){
 }
 function adjustZoom(dir){
   zoomLevel=Math.min(150,Math.max(60,zoomLevel+(dir*10)));
-  const wrap=document.querySelector('.wrap');
-  if(wrap) wrap.style.zoom=zoomLevel+'%';
+  const scale=zoomLevel/100;
+  document.body.style.transform='scale('+scale+')';
+  document.body.style.transformOrigin='top center';
+  document.body.style.minHeight=(100/scale)+'vh';
+  // Counter-scale fixed controls so they stay readable
+  const fc=document.querySelector('.fixed-controls');
+  if(fc){fc.style.transform='scale('+(1/scale)+')';fc.style.transformOrigin='bottom right';}
 }
 
 function setView(v){
