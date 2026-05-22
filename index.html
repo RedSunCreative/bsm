@@ -414,7 +414,6 @@ body{background:#3a3f4a;min-height:100vh;font-family:'Helvetica Neue',Arial,sans
     </svg>
     <div class="allclear-text">ALL CLEAR! 🎉</div>
     <div class="allclear-sub">Great show, everyone!<br>Thank you for making something beautiful tonight.<br><br>Love, Boo 💛</div>
-    <button class="allclear-reset" onclick="resetShow()">↺ START OVER — RESET SHOW</button>
   </div>
 
   <div class="footer">BOO PRODUCTION SUITE · LITTLE BIG VOICES E8</div>
@@ -425,7 +424,6 @@ body{background:#3a3f4a;min-height:100vh;font-family:'Helvetica Neue',Arial,sans
   <button class="applause-close" onclick="closeApplause()">✕ CLOSE</button>
   <div class="applause-text" id="applause-text">👏 APPLAUSE 👏</div>
   <div class="applause-sub">Thank you!</div>
-  <button class="applause-reset" onclick="resetShow()">↺ START OVER — RESET SHOW</button>
 </div>
 
 <!-- LIVE EDIT OVERLAY -->
@@ -680,6 +678,7 @@ function fireStandby(){
 function fireApplause(){
   const banner=document.getElementById("applause-banner");
   if(banner) banner.style.display="flex";
+  applyRotationToOverlays(tvRotation);
   sbSet({ros_change_msg:"__APPLAUSE__"});
 }
 function closeApplause(){
@@ -989,48 +988,66 @@ function updatePinDisplay(){const d=document.getElementById("pin-display");if(d)
 
 let tvRotation=0;
 let zoomLevel=100;
+function applyRotationToOverlays(deg){
+  // Rotate full-screen fixed overlays to match wrap rotation
+  const overlays=['applause-banner','live-edit-overlay'];
+  overlays.forEach(function(id){
+    const el=document.getElementById(id);
+    if(!el) return;
+    if(deg===0){
+      el.style.transform='';el.style.transformOrigin='';
+    } else if(deg===90){
+      el.style.transformOrigin='top left';
+      el.style.transform='rotate(90deg) translateY(-100%)';
+      el.style.width='100vh';el.style.height='100vw';
+      el.style.top='0';el.style.left='0';
+    } else if(deg===180){
+      el.style.transformOrigin='center center';
+      el.style.transform='rotate(180deg)';
+    } else if(deg===270){
+      el.style.transformOrigin='top left';
+      el.style.transform='rotate(270deg) translateX(-100%)';
+      el.style.width='100vh';el.style.height='100vw';
+      el.style.top='0';el.style.left='0';
+    }
+  });
+}
+
 function cycleRotation(){
   tvRotation=(tvRotation+90)%360;
   const wrap=document.querySelector('.wrap');
   const btn=document.getElementById('btn-rotate');
-  // Reset all inline styles first
   wrap.style.cssText='';
   if(tvRotation===0){
-    // Normal - restore defaults
     wrap.style.maxWidth='560px';
     wrap.style.margin='0 auto';
     if(btn) btn.classList.remove('active');
   } else if(tvRotation===90){
     wrap.style.position='fixed';
-    wrap.style.top='0';
-    wrap.style.left='0';
-    wrap.style.width='100vh';
-    wrap.style.height='100vw';
+    wrap.style.top='0';wrap.style.left='0';
+    wrap.style.width='100vh';wrap.style.height='100vw';
     wrap.style.transformOrigin='top left';
     wrap.style.transform='rotate(90deg) translateY(-100%)';
     wrap.style.overflowY='auto';
     if(btn) btn.classList.add('active');
   } else if(tvRotation===180){
     wrap.style.position='fixed';
-    wrap.style.top='0';
-    wrap.style.left='0';
-    wrap.style.width='100vw';
-    wrap.style.height='100vh';
+    wrap.style.top='0';wrap.style.left='0';
+    wrap.style.width='100vw';wrap.style.height='100vh';
     wrap.style.transformOrigin='center center';
     wrap.style.transform='rotate(180deg)';
     wrap.style.overflowY='auto';
     if(btn) btn.classList.add('active');
   } else if(tvRotation===270){
     wrap.style.position='fixed';
-    wrap.style.top='0';
-    wrap.style.left='0';
-    wrap.style.width='100vh';
-    wrap.style.height='100vw';
+    wrap.style.top='0';wrap.style.left='0';
+    wrap.style.width='100vh';wrap.style.height='100vw';
     wrap.style.transformOrigin='top left';
     wrap.style.transform='rotate(270deg) translateX(-100%)';
     wrap.style.overflowY='auto';
     if(btn) btn.classList.add('active');
   }
+  applyRotationToOverlays(tvRotation);
 }
 function adjustZoom(dir){
   zoomLevel=Math.min(150,Math.max(60,zoomLevel+(dir*10)));
